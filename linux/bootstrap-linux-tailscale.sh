@@ -110,6 +110,10 @@ ensure_sshd_key "UsePAM" "yes"
 ensure_sshd_key "AllowUsers" "$ADMIN_USER"
 
 if command -v sshd >/dev/null 2>&1; then
+  # Some minimal cloud images are missing this runtime dir until ssh starts.
+  mkdir -p /run/sshd
+  chmod 755 /run/sshd
+
   echo "==> Validating sshd config"
   sshd -t
 fi
