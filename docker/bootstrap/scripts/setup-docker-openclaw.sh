@@ -5,21 +5,27 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORKSPACE_DIR_NAME="workspace"
 STATE_USER="openclaw"
 STATE_DIR=""
+SKIP_INSTALL=0
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --workspace-dir-name) WORKSPACE_DIR_NAME="$2"; shift 2 ;;
     --state-user) STATE_USER="$2"; shift 2 ;;
     --state-dir) STATE_DIR="$2"; shift 2 ;;
+    --skip-install) SKIP_INSTALL=1; shift ;;
     *) echo "Unknown argument: $1" >&2; exit 1 ;;
   esac
 done
 
 # Orchestrator wrapper for the modular steps
-if [[ $EUID -eq 0 ]]; then
-  "$SCRIPT_DIR/10-install-docker.sh"
+if [[ $SKIP_INSTALL -eq 1 ]]; then
+  echo "[ok] skipping Docker install step (--skip-install)"
 else
-  sudo "$SCRIPT_DIR/10-install-docker.sh"
+  if [[ $EUID -eq 0 ]]; then
+    "$SCRIPT_DIR/10-install-docker.sh"
+  else
+    sudo "$SCRIPT_DIR/10-install-docker.sh"
+  fi
 fi
 
 prepare_args=(

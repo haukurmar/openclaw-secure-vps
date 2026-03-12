@@ -53,7 +53,7 @@ case "$MODE" in
       [[ "${docker_args[$i]}" == "--state-dir" ]] && docker_has_state_dir=1
     done
 
-    linux_admin_user=""
+    linux_admin_user="openclaw"
     for ((i=0; i<${#linux_args[@]}; i++)); do
       if [[ "${linux_args[$i]}" == "--admin-user" && $((i+1)) -lt ${#linux_args[@]} ]]; then
         linux_admin_user="${linux_args[$((i+1))]}"
@@ -66,8 +66,53 @@ case "$MODE" in
     fi
 
     bash "$ROOT_DIR/linux/bootstrap-linux-tailscale.sh" "${linux_args[@]}"
-    cd "$ROOT_DIR/docker/bootstrap"
-    exec bash ./scripts/setup-docker-openclaw.sh "${docker_args[@]}"
+
+    # Docker engine install remains root-level.
+    bash "$ROOT_DIR/docker/bootstrap/scripts/10-install-docker.sh"
+
+    if ! id -u "$linux_admin_user" >/dev/null 2>&1; then
+      echo "Expected admin user '$linux_admin_user' to exist before docker handoff." >&2
+      exit 1
+    fi
+
+    # Allow non-root docker CLI use in the handoff user session.
+    usermod -aG docker "$linux_admin_user" || true
+
+    if ! command -v runuser >/dev/null 2>&1; then
+      echo "runuser not found; cannot switch to '$linux_admin_user' for docker phase." >&2
+      exit 1
+    fi
+
+    docker_bootstrap_dir="$ROOT_DIR/docker/bootstrap"
+    if ! runuser -u "$linux_admin_user" -- test -r "$docker_bootstrap_dir/scripts/setup-docker-openclaw.sh"; then
+      target_repo="/home/$linux_admin_user/repos/$(basename "$ROOT_DIR")"
+      target_bootstrap_dir="$target_repo/docker/bootstrap"
+
+      echo "Repo path is not readable by '$linux_admin_user': $ROOT_DIR"
+      echo "Attempting automatic relocation to: $target_repo"
+
+      install -d -m 755 -o "$linux_admin_user" -g "$linux_admin_user" "/home/$linux_admin_user/repos"
+      if command -v rsync >/dev/null 2>&1; then
+        rsync -a --chown="$linux_admin_user:$linux_admin_user" "$ROOT_DIR/" "$target_repo/"
+      else
+        mkdir -p "$target_repo"
+        cp -a "$ROOT_DIR"/. "$target_repo"/
+        chown -R "$linux_admin_user:$linux_admin_user" "$target_repo"
+      fi
+
+      if ! runuser -u "$linux_admin_user" -- test -r "$target_bootstrap_dir/scripts/setup-docker-openclaw.sh"; then
+        echo "Automatic relocation failed; '$linux_admin_user' still cannot read: $target_bootstrap_dir" >&2
+        exit 1
+      fi
+
+      echo "[ok] repo relocated for docker user phase: $target_repo"
+      echo "[info] previous repo location was kept: $ROOT_DIR"
+      docker_bootstrap_dir="$target_bootstrap_dir"
+    fi
+
+    cd "$docker_bootstrap_dir"
+    exec runuser -u "$linux_admin_user" -- \
+      bash ./scripts/setup-docker-openclaw.sh --skip-install "${docker_args[@]}"
     ;;
   -h|--help|help)
     usage
