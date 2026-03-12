@@ -84,6 +84,10 @@ sudo ./setup.sh all --admin-user openclaw -- --workspace-dir-name workspace-main
 - user phase (`--admin-user`): Docker bootstrap (`prepare-env`, `build`, `up`, `logs`)
 
 If `all` mode starts from a root-only path (like `/root/...`), it auto-relocates the repo to `/home/<admin-user>/repos/<repo-name>` before the user-phase Docker bootstrap continues.
+After success in interactive shells, `all` mode switches into a login shell for `--admin-user`.
+It also installs aliases for that user:
+- `ocl`
+- `docker:openclaw`
 
 ✅ And you're done with setup.
 

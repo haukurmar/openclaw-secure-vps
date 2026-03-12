@@ -3,6 +3,26 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+ensure_admin_aliases() {
+  local admin_user="$1"
+  local admin_home
+  admin_home="$(getent passwd "$admin_user" | cut -d: -f6 || true)"
+  [[ -z "$admin_home" ]] && admin_home="/home/$admin_user"
+
+  local alias_docker_openclaw="alias docker:openclaw='docker exec -it openclaw-gateway openclaw'"
+  local alias_ocl="alias ocl='docker exec -it openclaw-gateway openclaw'"
+
+  local rc_file
+  for rc_file in "$admin_home/.bashrc" "$admin_home/.zshrc"; do
+    if [[ ! -f "$rc_file" ]]; then
+      touch "$rc_file"
+    fi
+    grep -Fqx "$alias_docker_openclaw" "$rc_file" || echo "$alias_docker_openclaw" >> "$rc_file"
+    grep -Fqx "$alias_ocl" "$rc_file" || echo "$alias_ocl" >> "$rc_file"
+    chown "$admin_user:$admin_user" "$rc_file"
+  done
+}
+
 usage() {
   cat <<'EOF'
 Usage:
@@ -111,8 +131,27 @@ case "$MODE" in
     fi
 
     cd "$docker_bootstrap_dir"
-    exec runuser -u "$linux_admin_user" -- \
+    runuser -u "$linux_admin_user" -- \
       bash ./scripts/setup-docker-openclaw.sh --skip-install "${docker_args[@]}"
+
+    ensure_admin_aliases "$linux_admin_user"
+
+    echo
+    echo "[ok] aliases installed for user '$linux_admin_user':"
+    echo "  - ocl"
+    echo "  - docker:openclaw"
+    echo
+    echo "Examples:"
+    echo "  ocl configure"
+    echo "  docker:openclaw configure"
+    echo
+
+    if [[ -t 0 && -t 1 ]]; then
+      echo "Switching to login shell for '$linux_admin_user'..."
+      exec runuser -l "$linux_admin_user"
+    else
+      echo "[info] non-interactive session detected; shell handoff skipped."
+    fi
     ;;
   -h|--help|help)
     usage
