@@ -8,6 +8,9 @@ services:
     restart: unless-stopped
     env_file:
       - .env
+    environment:
+      # Keep container state path internal. Host path stays in the bind mount below.
+      OPENCLAW_STATE_DIR: /home/node/.openclaw
     ports:
       - "127.0.0.1:${OPENCLAW_GATEWAY_PORT:-18789}:18789"
     volumes:
