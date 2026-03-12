@@ -79,6 +79,12 @@ sudo ./setup.sh all --admin-user openclaw --tailscale-up ssh -- --workspace-dir-
 sudo ./setup.sh all --admin-user openclaw -- --workspace-dir-name workspace-main
 ```
 
+`all` mode now runs in two privilege phases:
+- root phase: Linux hardening + Docker engine install
+- user phase (`--admin-user`): Docker bootstrap (`prepare-env`, `build`, `up`, `logs`)
+
+If `all` mode starts from a root-only path (like `/root/...`), it auto-relocates the repo to `/home/<admin-user>/repos/<repo-name>` before the user-phase Docker bootstrap continues.
+
 ✅ And you're done with setup.
 
 The sections below are quick-reference options for Linux and Docker modes when you want to customize behavior.

@@ -9,6 +9,20 @@ This is a two-part setup, aligned to your current security model:
 
 ---
 
+## One-command full setup
+
+```bash
+sudo ./setup.sh all --admin-user openclaw -- --workspace-dir-name workspace
+```
+
+`all` mode runs in two privilege phases:
+- root phase: Linux hardening + Docker engine install
+- user phase (`--admin-user`): Docker bootstrap (`prepare-env`, `build`, `up`, `logs`)
+
+If `all` mode starts from a root-only path (like `/root/...`), it auto-relocates the repo to `/home/<admin-user>/repos/<repo-name>` before the user-phase Docker bootstrap continues.
+
+---
+
 ## Part 1 — Linux host setup (Ubuntu/Debian)
 
 ## Goal
@@ -84,6 +98,23 @@ sudo whoami
 ## Files provided
 - Dockerfile: `./docker/Dockerfile.openclaw`
 - Root helper: `./setup.sh docker`
+
+## If you run Part 1 and Part 2 separately
+
+After Linux setup, switch to the admin user before Docker bootstrap:
+
+```bash
+sudo usermod -aG docker openclaw
+sudo install -d -m 755 -o openclaw -g openclaw /home/openclaw/repos
+sudo rsync -a --chown=openclaw:openclaw /root/openclaw-secure-vps/ /home/openclaw/repos/openclaw-secure-vps/
+sudo -iu openclaw
+cd /home/openclaw/repos/openclaw-secure-vps
+./setup.sh docker --state-user openclaw --workspace-dir-name workspace
+```
+
+Notes:
+- Use a fresh login shell (`sudo -iu openclaw`) so `docker` group membership is active.
+- Run Docker bootstrap from a user-readable path (for example `/home/openclaw/repos/...`), not `/root/...`.
 
 ## Recommended runtime (use official image)
 
