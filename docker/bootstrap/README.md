@@ -22,14 +22,17 @@ This bundle gives you:
 ## Quick start
 
 ```bash
-cd ~/.openclaw/docs/vps-openclaw-setup/docker/bootstrap
-sudo ./scripts/setup-docker-openclaw.sh --workspace-dir-name workspace
+cd ./docker/bootstrap
+sudo ./scripts/setup-docker-openclaw.sh --workspace-dir-name workspace --state-user openclaw
 ```
 
 Example custom workspace name:
 
 ```bash
-sudo ./scripts/setup-docker-openclaw.sh --workspace-dir-name workspace-main
+sudo ./scripts/setup-docker-openclaw.sh --workspace-dir-name workspace-main --state-user openclaw
+
+# or explicit state path override
+sudo ./scripts/setup-docker-openclaw.sh --state-dir /home/openclaw/.openclaw
 ```
 
 ## Layer model

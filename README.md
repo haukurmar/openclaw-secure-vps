@@ -14,16 +14,16 @@ It is designed for a **Tailscale-first security model**:
 At a high level, it gives you two tracks:
 
 1. **Host setup (Linux hardening + access path)**
-   - creates/administers a non-root Linux user
-   - hardens SSH (no root login, no password auth)
-   - configures host firewall policy (UFW)
-   - installs/boots Tailscale and guides auth flow
+    - creates/administers a non-root Linux user
+    - hardens SSH (no root login, no password auth)
+    - configures host firewall policy (UFW)
+    - installs/boots Tailscale and guides auth flow
 
 2. **Container setup (OpenClaw runtime)**
-   - installs Docker + Compose
-   - builds/starts an OpenClaw container stack
-   - creates `.env` from `.env.example`
-   - seeds baseline workspace/config defaults (non-destructive)
+    - installs Docker + Compose
+    - builds/starts an OpenClaw container stack
+    - creates `.env` from `.env.example`
+    - seeds baseline workspace/config defaults (non-destructive)
 
 ---
 
@@ -42,12 +42,12 @@ At a high level, it gives you two tracks:
 - `linux/bootstrap-linux-tailscale.sh` — host bootstrap script
 - `docker/Dockerfile.openclaw` — lightweight wrapper image
 - `docker/bootstrap/` — modular Docker bootstrap stack
-  - `scripts/10-install-docker.sh`
-  - `scripts/20-prepare-env.sh`
-  - `scripts/30-build-image.sh`
-  - `scripts/40-up.sh`
-  - `scripts/50-logs.sh`
-  - `scripts/setup-docker-openclaw.sh` (orchestrator)
+    - `scripts/10-install-docker.sh`
+    - `scripts/20-prepare-env.sh`
+    - `scripts/30-build-image.sh`
+    - `scripts/40-up.sh`
+    - `scripts/50-logs.sh`
+    - `scripts/setup-docker-openclaw.sh` (orchestrator)
 
 ---
 
@@ -74,6 +74,9 @@ sudo ./setup.sh all
 
 # Run both with separate flags (left of -- => linux, right => docker)
 sudo ./setup.sh all --admin-user openclaw --tailscale-up ssh -- --workspace-dir-name workspace-main
+
+# In all mode, docker state user auto-inherits from linux --admin-user unless overridden
+sudo ./setup.sh all --admin-user openclaw -- --workspace-dir-name workspace-main
 ```
 
 ✅ And you're done with setup.
@@ -120,6 +123,8 @@ sudo ./setup.sh docker
 | Flag | Default | What it does |
 |---|---|---|
 | `--workspace-dir-name <name>` | `workspace` | Sets OpenClaw workspace folder under state dir (e.g. `workspace-main`). |
+| `--state-user <name>` | `openclaw` | Sets Docker bind-mount state path to `/home/<state-user>/.openclaw`. |
+| `--state-dir <path>` | _(derived)_ | Overrides Docker bind-mount state path explicitly. |
 
 Example custom workspace name:
 
