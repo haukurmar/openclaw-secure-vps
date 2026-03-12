@@ -1,0 +1,19 @@
+# Lightweight wrapper image for OpenClaw on VPS
+# Prefer pinned version tags for production:
+#   ghcr.io/openclaw/openclaw:<version>
+
+FROM ghcr.io/openclaw/openclaw:latest
+
+# Optional: add minimal diagnostics tools (comment out if you want pure upstream image)
+USER root
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends curl ca-certificates jq \
+  && rm -rf /var/lib/apt/lists/*
+USER node
+
+# OpenClaw state is expected at /home/node/.openclaw (mount host volume there)
+WORKDIR /home/node
+
+EXPOSE 18789
+
+# Keep default upstream entrypoint/cmd from base image

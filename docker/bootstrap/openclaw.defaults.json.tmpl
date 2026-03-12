@@ -1,0 +1,30 @@
+{
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "${OPENCLAW_MODEL_PRIMARY}",
+        "fallbacks": ["openrouter/auto"]
+      },
+      "workspace": "${OPENCLAW_WORKSPACE}",
+      "compaction": {
+        "mode": "safeguard",
+        "memoryFlush": {
+          "enabled": true,
+          "softThresholdTokens": 4000,
+          "systemPrompt": "Session nearing compaction. Save durable notes to session-specific scratch memory.",
+          "prompt": "Write durable notes from THIS session to a session-specific file under memory/sessions/. Use a unique filename derived from the current session key/context (sanitize to lowercase kebab-case and .md). Append short timestamped bullets only. Capture: decisions, constraints, open questions, owners, people, and any state that would break if forgotten. If nothing meaningful happened, write NO_FLUSH. Reply with NO_REPLY."
+        }
+      },
+      "maxConcurrent": 4,
+      "subagents": { "maxConcurrent": 8 }
+    }
+  },
+  "session": {
+    "dmScope": "per-channel-peer"
+  },
+  "gateway": {
+    "port": ${OPENCLAW_GATEWAY_PORT},
+    "mode": "local",
+    "bind": "loopback"
+  }
+}

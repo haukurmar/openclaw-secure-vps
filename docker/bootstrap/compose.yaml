@@ -1,0 +1,14 @@
+services:
+  openclaw:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: openclaw-golden:local
+    container_name: openclaw-gateway
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "127.0.0.1:${OPENCLAW_GATEWAY_PORT:-18789}:18789"
+    volumes:
+      - ${OPENCLAW_STATE_DIR:-/home/openclaw/.openclaw}:/home/node/.openclaw
