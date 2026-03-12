@@ -16,7 +16,11 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Orchestrator wrapper for the modular steps
-sudo "$SCRIPT_DIR/10-install-docker.sh"
+if [[ $EUID -eq 0 ]]; then
+  "$SCRIPT_DIR/10-install-docker.sh"
+else
+  sudo "$SCRIPT_DIR/10-install-docker.sh"
+fi
 
 prepare_args=(
   --workspace-dir-name "$WORKSPACE_DIR_NAME"
