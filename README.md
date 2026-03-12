@@ -96,6 +96,7 @@ The sections below are quick-reference options for Linux and Docker modes when y
 | `--allow-udp-41641 yes\|no` | `yes` | Opens UDP 41641 in UFW (optional Tailscale direct path compatibility). |
 | `--tailscale-up ssh\|basic\|no` | `ssh` | Runs `tailscale up --ssh`, `tailscale up`, or skips it. |
 | `--run-upgrade yes\|no` | `yes` | Runs `apt upgrade -y` + `apt autoremove -y` after `apt update`. |
+| `--set-password prompt\|skip` | `prompt` | Prompts to set password for the admin user at the end of setup. |
 
 Example with explicit Linux values:
 
@@ -105,7 +106,8 @@ sudo ./setup.sh linux \
   --copy-root-authorized-keys yes \
   --allow-udp-41641 yes \
   --tailscale-up ssh \
-  --run-upgrade yes
+  --run-upgrade yes \
+  --set-password prompt
 ```
 
 ---

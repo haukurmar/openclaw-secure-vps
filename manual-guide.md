@@ -41,7 +41,8 @@ sudo ./setup.sh linux \
   --copy-root-authorized-keys yes \
   --allow-udp-41641 yes \
   --tailscale-up ssh \
-  --run-upgrade yes
+  --run-upgrade yes \
+  --set-password prompt
 ```
 
 ## Flags
@@ -50,6 +51,7 @@ sudo ./setup.sh linux \
 - `--allow-udp-41641 yes|no` (default: `yes`)
 - `--tailscale-up ssh|basic|no` (default: `ssh`)
 - `--run-upgrade yes|no` (default: `yes`)
+- `--set-password prompt|skip` (default: `prompt`)
 
 > The script now launches `tailscale up` (default `--ssh`) at the end and prints a hard warning: **do not reboot or close provider console until Tailscale auth + SSH verification succeed**.
 

@@ -6,6 +6,7 @@ COPY_ROOT_KEYS="yes"
 ALLOW_UDP_41641="yes"
 TAILSCALE_UP_MODE="ssh"  # ssh|basic|no
 RUN_UPGRADE="yes"        # yes|no
+SET_PASSWORD="prompt"     # prompt|skip
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -19,6 +20,8 @@ while [[ $# -gt 0 ]]; do
       TAILSCALE_UP_MODE="$2"; shift 2 ;;
     --run-upgrade)
       RUN_UPGRADE="$2"; shift 2 ;;
+    --set-password)
+      SET_PASSWORD="$2"; shift 2 ;;
     *)
       echo "Unknown argument: $1" >&2
       exit 1 ;;
@@ -36,6 +39,10 @@ if [[ "$TAILSCALE_UP_MODE" != "ssh" && "$TAILSCALE_UP_MODE" != "basic" && "$TAIL
 fi
 if [[ "$RUN_UPGRADE" != "yes" && "$RUN_UPGRADE" != "no" ]]; then
   echo "Invalid --run-upgrade value: $RUN_UPGRADE (expected: yes|no)" >&2
+  exit 1
+fi
+if [[ "$SET_PASSWORD" != "prompt" && "$SET_PASSWORD" != "skip" ]]; then
+  echo "Invalid --set-password value: $SET_PASSWORD (expected: prompt|skip)" >&2
   exit 1
 fi
 
@@ -167,3 +174,12 @@ echo "  4) After login: sudo whoami   # should print root"
 echo
 
 echo "Only after all checks pass should you reboot or close the provider console session."
+
+echo
+if [[ "$SET_PASSWORD" == "prompt" ]]; then
+  echo "==> Final step: set password for user '$ADMIN_USER'"
+  echo "    (needed for sudo prompts unless you use passwordless sudo policy)"
+  passwd "$ADMIN_USER"
+else
+  echo "==> Skipping password set (--set-password skip)"
+fi
